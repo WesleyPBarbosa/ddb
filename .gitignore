@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+
+# Docker
+*.log
+
+# OS
+desktop.ini
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,77 @@
+services:
+  mysql1:
+    image: mysql:8.0
+    container_name: mysql1
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql1_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-prootpass"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mysql2:
+    image: mysql:8.0
+    container_name: mysql2
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql2_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-prootpass"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mysql3:
+    image: mysql:8.0
+    container_name: mysql3
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql3_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-prootpass"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  node1:
+    build: .
+    container_name: node1
+    command: ["python", "node.py", "/app/config/node1.json"]
+    depends_on:
+      mysql1:
+        condition: service_healthy
+    ports:
+      - "9001:9000"
+
+  node2:
+    build: .
+    container_name: node2
+    command: ["python", "node.py", "/app/config/node2.json"]
+    depends_on:
+      mysql2:
+        condition: service_healthy
+    ports:
+      - "9002:9000"
+
+  node3:
+    build: .
+    container_name: node3
+    command: ["python", "node.py", "/app/config/node3.json"]
+    depends_on:
+      mysql3:
+        condition: service_healthy
+    ports:
+      - "9003:9000"
+
+volumes:
+  mysql1_data:
+  mysql2_data:
+  mysql3_data:

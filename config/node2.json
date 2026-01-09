@@ -1,0 +1,17 @@
+{
+  "node_id": 2,
+  "listen_host": "0.0.0.0",
+  "listen_port": 9000,
+  "cluster_nodes": [
+    {"node_id": 1, "host": "node1", "port": 9000},
+    {"node_id": 2, "host": "node2", "port": 9000},
+    {"node_id": 3, "host": "node3", "port": 9000}
+  ],
+  "mysql": {
+    "host": "mysql2",
+    "port": 3306,
+    "user": "ddb",
+    "password": "ddbpass",
+    "database": "ddb"
+  }
+}
