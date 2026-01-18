@@ -89,12 +89,18 @@ class DDBNode:
             print(f"[node {self.node_id}] new coordinator = {newc}")
 
         elif mtype == MsgType.CLIENT_QUERY:
-            # cliente pode conectar em qualquer nó; se não sou coordenador, encaminho
-            if self.node_id != self.coordinator_id:
+            if self.node_id != self.coordinator_id and payload.get("client") != "coord":
                 result = await self.forward_to_coordinator(mtype, payload)
                 await send_message(writer, MsgType.QUERY_RESULT, result)
             else:
-                result = await self.handle_client_query_as_coordinator(payload)
+                if payload.get("client") == "coord":
+                    # forwarded read, execute locally
+                    sql = payload["sql"]
+                    req_id = payload.get("request_id", str(uuid.uuid4()))
+                    result = await self.exec_local_select(sql, req_id)
+                    result["executed_on_node"] = self.node_id
+                else:
+                    result = await self.handle_client_query_as_coordinator(payload)
                 await send_message(writer, MsgType.QUERY_RESULT, result)
 
         elif mtype == MsgType.PREPARE:

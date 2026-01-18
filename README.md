@@ -46,6 +46,52 @@ Características da arquitetura:
 
 A comunicação entre os nós ocorre exclusivamente via **sockets TCP**, dentro de uma rede Docker.
 
+### Tipos de Comunicação
+
+O sistema utiliza os seguintes tipos de comunicação para diferentes operações:
+
+- **Unicast**: Comunicação ponto-a-ponto entre dois nós específicos.
+  - Cliente conecta a um nó para enviar queries.
+  - Nó não-coordenador encaminha queries para o coordenador.
+  - Coordenador envia mensagens de PREPARE, COMMIT, ROLLBACK para cada participante.
+  - Nós enviam heartbeats unicast para o coordenador (se não forem coordenadores).
+  - Eleição: candidato envia ELECTION para nós com ID maior.
+  - Anúncio de novo coordenador: unicast para cada nó.
+
+- **Broadcast**: Comunicação de um nó para todos os outros nós.
+  - Coordenador envia heartbeats broadcast para todos os nós (exceto ele mesmo).
+
+- **Multicast**: Não utilizado. Em um sistema maior, poderia ser empregado para heartbeats ou anúncios, mas com poucos nós e uso de TCP, unicast e broadcast são suficientes e mais confiáveis.
+
+Essa combinação garante eficiência e evita sobrecarga desnecessária, enquanto mantém a coordenação distribuída.
+
+### Protocolo de Comunicação
+
+Desenvolvemos um **protocolo próprio** para troca de informações entre as máquinas, implementado em `protocol.py`. Ele garante comunicação estruturada, confiável e verificável.
+
+#### Estrutura das Mensagens
+Cada mensagem é composta por:
+- **Cabeçalho fixo** (16 bytes): Identificação e metadados.
+  - Magic bytes: `"DDB1"` (4 bytes) - Identifica mensagens do DDB.
+  - Versão: `1` (1 byte) - Para compatibilidade futura.
+  - Tipo de mensagem: Enum `MsgType` (1 byte) - Define a operação (ex.: CLIENT_QUERY, PREPARE).
+  - Tamanho do payload: Inteiro (4 bytes) - Comprimento dos dados.
+  - Checksum CRC32: Inteiro (4 bytes) - Para integridade (usando `zlib.crc32`).
+- **Payload variável**: Dados em JSON (ex.: `{"sql": "SELECT * FROM table", "request_id": "uuid"}`).
+
+#### Tipos de Mensagem (MsgType)
+- **Coordenação**: JOIN, JOIN_ACK, HEARTBEAT, ELECTION, ELECTION_OK, COORDINATOR_ANNOUNCE.
+- **Queries**: CLIENT_QUERY (cliente -> nó), QUERY_RESULT (nó -> cliente).
+- **2PC**: PREPARE, PREPARED, ABORT, COMMIT, ROLLBACK.
+
+#### Funcionamento
+- **Empacotamento**: `pack_message()` serializa payload em JSON, calcula CRC32 e monta cabeçalho.
+- **Envio**: `send_message()` escreve bytes no socket via `asyncio`.
+- **Recebimento**: `read_message()` lê cabeçalho, valida magic/versão/CRC, desserializa JSON.
+- **Integridade**: CRC32 detecta corrupções; magic impede mensagens inválidas.
+
+Esse protocolo é customizado, não usa bibliotecas externas além de `struct`, `json` e `zlib` (padrão Python), e suporta todas as operações do DDB.
+
 ---
 
 ## Execução das Queries
@@ -183,6 +229,31 @@ Parar e apagar também os dados:
 ```bash
 docker compose down -v
 ```
+
+---
+
+## Execução em Múltiplas Máquinas
+
+Para executar o DDB em 3 computadores diferentes (ex.: IPs 192.168.1.10, 192.168.1.11, 192.168.1.12):
+
+### Pré-requisitos por Máquina
+- Python 3 com dependências (`pip install -r requirements.txt`)
+- MySQL instalado e configurado:
+  - Criar usuário `ddb` com senha `ddbpass`
+  - Criar banco `ddb`
+  - Executar `mysql-init/01-init.sql` no banco
+
+### Configuração
+- Atualize os arquivos `config/nodeX.json` com os IPs reais das máquinas.
+- Exemplo: Em `node1.json`, `"host": "192.168.1.10"` para node_id 1, etc.
+- `"mysql": {"host": "localhost", ...}` se MySQL for local.
+
+### Execução
+- **Máquina 1 (192.168.1.10)**: `python node.py config/node1.json`
+- **Máquina 2 (192.168.1.11)**: `python node.py config/node2.json`
+- **Máquina 3 (192.168.1.12)**: `python node.py config/node3.json`
+
+Os nós se conectarão automaticamente. Conecte o cliente a qualquer IP (ex.: `python client_cli.py 192.168.1.10 9000`).
 
 ---
 
