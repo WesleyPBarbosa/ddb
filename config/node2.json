@@ -3,9 +3,9 @@
   "listen_host": "0.0.0.0",
   "listen_port": 9000,
   "cluster_nodes": [
-    {"node_id": 1, "host": "192.168.1.10", "port": 9000},
-    {"node_id": 2, "host": "192.168.1.11", "port": 9000},
-    {"node_id": 3, "host": "192.168.1.12", "port": 9000}
+    {"node_id": 1, "host": "node1", "port": 9000},
+    {"node_id": 2, "host": "node2", "port": 9000},
+    {"node_id": 3, "host": "192.168.15.21", "port": 9000}
   ],
   "mysql": {
     "host": "localhost",
