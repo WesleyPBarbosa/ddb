@@ -3,12 +3,12 @@
   "listen_host": "0.0.0.0",
   "listen_port": 9000,
   "cluster_nodes": [
-    {"node_id": 1, "host": "node1", "port": 9000},
-    {"node_id": 2, "host": "node2", "port": 9000},
+    {"node_id": 1, "host": "192.168.15.4", "port": 9001},
+    {"node_id": 2, "host": "192.168.15.4", "port": 9002},
     {"node_id": 3, "host": "192.168.15.21", "port": 9000}
   ],
   "mysql": {
-    "host": "localhost",
+    "host": "mysql1",
     "port": 3306,
     "user": "ddb",
     "password": "ddbpass",
