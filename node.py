@@ -46,12 +46,15 @@ class DDBNode:
         peer = writer.get_extra_info("peername")
         try:
             while True:
-                mtype, payload = await read_message(reader)
+                # Tenta ler a mensagem
+                msg = await read_message(reader)
+                if msg is None: break
+                mtype, payload = msg
                 await self.dispatch(mtype, payload, writer)
         except Exception as e:
-            # conexão caiu ou erro de protocolo
-            # print(f"[node {self.node_id}] conn {peer} closed: {e}")
-            pass
+            import traceback
+            print(f"\n[!!!] ERRO NO PROCESSAMENTO: {e}")
+            traceback.print_exc() # Isso vai imprimir o erro real no terminal do Arch
         finally:
             writer.close()
             await writer.wait_closed()
