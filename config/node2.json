@@ -8,7 +8,7 @@
     {"node_id": 3, "host": "192.168.15.21", "port": 9000}
   ],
   "mysql": {
-    "host": "mysql1",
+    "host": "mysql2",
     "port": 3306,
     "user": "ddb",
     "password": "ddbpass",

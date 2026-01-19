@@ -264,6 +264,15 @@ class DDBNode:
                 results[nid] = await self.handle_prepare({"txn_id": txn_id, "sql": sql, "request_id": req_id})
             else:
                 host, port = self.cluster[nid]
+                try:
+                    reader, writer = await asyncio.wait_for(
+                        asyncio.open_connection(host, port), 
+                        timeout=3.0 # Se não conectar em 3s, ele pula para o erro
+                    )
+                except asyncio.TimeoutError:
+                    print(f"[ERRO] Timeout ao tentar conectar no nó {nid} ({host}:{port})")
+                    results[nid] = {"ok": False, "error": "timeout"}
+                    continue
                 reader, writer = await asyncio.open_connection(host, port)
                 # logging: conteúdo transmitido
                 print(f"[coord {self.node_id}] -> PREPARE to node {nid}: txn={txn_id} sql={sql!r}")
