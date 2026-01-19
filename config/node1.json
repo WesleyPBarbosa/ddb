@@ -1,17 +1,17 @@
 {
   "node_id": 1,
   "listen_host": "0.0.0.0",
-  "listen_port": 9000,
+  "listen_port": 9001,
   "cluster_nodes": [
-    {"node_id": 1, "host": "192.168.15.4", "port": 9001},
-    {"node_id": 2, "host": "192.168.15.4", "port": 9002},
-    {"node_id": 3, "host": "192.168.15.21", "port": 9000}
+    {"node_id": 1, "host": "10.211.195.203", "port": 9001},
+    {"node_id": 2, "host": "10.211.195.217", "port": 9002},
+    {"node_id": 3, "host": "10.211.195.222", "port": 9003}
   ],
   "mysql": {
-    "host": "mysql1",
+    "host": "127.0.0.1",
     "port": 3306,
     "user": "ddb",
-    "password": "ddbpass",
+    "password": "Ddbpass123!",
     "database": "ddb"
   }
 }
