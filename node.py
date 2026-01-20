@@ -46,11 +46,11 @@ class DDBNode:
         peer = writer.get_extra_info("peername")
         try:
             while True:
-                # Tenta ler a mensagem
-                msg = await read_message(reader)
-                if msg is None: break
-                mtype, payload = msg
+                mtype, payload = await read_message(reader)
                 await self.dispatch(mtype, payload, writer)
+        except (ConnectionError, asyncio.IncompleteReadError):
+            # Conexão fechada pelo cliente (comportamento esperado do client_cli)
+            pass
         except Exception as e:
             import traceback
             print(f"\n[!!!] ERRO NO PROCESSAMENTO: {e}")
